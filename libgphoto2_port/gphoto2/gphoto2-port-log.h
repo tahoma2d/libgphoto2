@@ -108,7 +108,7 @@ __attribute__((__format__(printf,4,5)))
  */
 
 #ifdef _GPHOTO2_INTERNAL_CODE
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || _MSC_VER
 #define GP_DEBUG(...) \
         gp_log(GP_LOG_DEBUG, GP_MODULE "/" __FILE__, __VA_ARGS__)
 

@@ -150,3 +150,17 @@ Makefile.in
 /tests/test-pedantic-cxx98
 
 /tmpwrk*/
+
+/libgphoto2/_stdint.h
+/libgphoto2_port/po/Makevars
+/po/Makevars
+
+# msvc files
+.vs/
+bin/
+intermediate/
+*.user
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
