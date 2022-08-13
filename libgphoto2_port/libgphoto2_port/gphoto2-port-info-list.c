@@ -25,6 +25,10 @@
 
 #include "config.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #include <gphoto2/gphoto2-port-info-list.h>
 
 #include <errno.h>
@@ -292,8 +296,36 @@ foreach_func (const char *filename, lt_ptr data)
 	return (0);
 }
 
+const char *getIolibs() {
+  static char buf[1024];
 
-/**
+#ifdef __APPLE__
+  // Iterate through all images currently in memory
+  int c = _dyld_image_count();
+  for (int i = 0; i < c; i++) {
+    const char *image_name = _dyld_get_image_name(i);
+
+		char *libgphoto2 = strstr(image_name, "libgphoto2_port.");
+    if (!libgphoto2)
+      continue;
+
+    if (sizeof(buf) < strlen(image_name) + 1)
+      return NULL;
+
+    strncpy(buf, image_name, sizeof(buf) - 1);
+    char *p = strstr(buf, "libgphoto2_port.");
+    char *p2 = strstr(IOLIBS, "libgphoto2_port");
+
+    strncpy(p, p2, sizeof(buf) - 1);
+
+    break;
+  }
+#endif
+
+  return buf;
+}
+
+    /**
  * \brief Load system ports
  *
  * \param list a #GPPortInfoList
@@ -309,7 +341,10 @@ int
 gp_port_info_list_load (GPPortInfoList *list)
 {
 	const char *iolibs_env = getenv(IOLIBDIR_ENV);
-	const char *iolibs = (iolibs_env != NULL)?iolibs_env:IOLIBS;
+  const char *iolibs_rel = getIolibs();
+  const char *iolibs = (iolibs_env != NULL)
+                           ? iolibs_env
+                           : (iolibs_rel != NULL) ? iolibs_rel : IOLIBS;
 	int result;
 
 	C_PARAMS (list);

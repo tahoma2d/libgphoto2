@@ -24,6 +24,11 @@
 #define _DARWIN_C_SOURCE
 
 #include "config.h"
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #include <gphoto2/gphoto2-abilities-list.h>
 
 #include <errno.h>
@@ -321,6 +326,35 @@ gp_abilities_list_load_dir (CameraAbilitiesList *list, const char *dir,
 }
 
 
+const char *getCamlib() {
+  static char buf[1024];
+
+#ifdef __APPLE__
+  // Iterate through all images currently in memory
+  int c = _dyld_image_count();
+  for (int i = 0; i < c; i++) {
+    const char *image_name = _dyld_get_image_name(i);
+
+    char *libgphoto2 = strstr(image_name, "libgphoto2.");
+    if (!libgphoto2)
+      continue;
+
+    if (sizeof(buf) < strlen(image_name) + 1)
+      return NULL;
+
+    strncpy(buf, image_name, sizeof(buf) - 1);
+    char *p = strstr(buf, "libgphoto2.");
+    char *p2 = strstr(CAMLIBS, "libgphoto2");
+
+    strncpy(p, p2, sizeof(buf) - 1);
+
+    break;
+  }
+#endif
+
+  return buf;
+}
+
 /**
  * \brief Scans the system for camera drivers.
  *
@@ -335,7 +369,8 @@ int
 gp_abilities_list_load (CameraAbilitiesList *list, GPContext *context)
 {
 	const char *camlib_env = getenv(CAMLIBDIR_ENV);
-	const char *camlibs = (camlib_env != NULL)?camlib_env:CAMLIBS;
+  const char *camlib_rel = getCamlib();
+	const char *camlibs = (camlib_env != NULL)?camlib_env:(camlib_rel!=NULL) ?camlib_rel:CAMLIBS;
 	C_PARAMS (list);
 
 	CHECK_RESULT (gp_abilities_list_load_dir (list, camlibs, context));
