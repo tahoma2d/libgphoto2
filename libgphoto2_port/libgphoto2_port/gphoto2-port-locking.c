@@ -23,7 +23,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA  02110-1301  USA
  */
-
+#ifndef WIN32
 #include <pthread.h>
 
 #include <gphoto2/gphoto2-port-locking.h>
@@ -40,3 +40,20 @@ void gpi_libltdl_unlock(void)
 {
 	pthread_mutex_unlock(&gpi_libltdl_mutex);
 }
+#else
+#include <windows.h>
+
+#include <gphoto2/gphoto2-port-locking.h>
+
+CRITICAL_SECTION my_mutex;
+
+void gpi_libltdl_lock(void)
+{
+  InitializeCriticalSection(&my_mutex);
+}
+
+void gpi_libltdl_unlock(void)
+{
+  DeleteCriticalSection(&my_mutex);
+}
+#endif

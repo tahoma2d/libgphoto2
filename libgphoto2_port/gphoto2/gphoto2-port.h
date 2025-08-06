@@ -71,6 +71,10 @@ typedef struct _GPPortSettingsSerial {
 /**
  * \brief Port settings for USB ports.
  */
+#ifdef interface
+#undef interface
+#define _RESTORE_INTERFACE
+#endif
 typedef struct _GPPortSettingsUSB {
 	int inep;		/**< \brief Bulk IN endpoint used. */
 	int outep;		/**< \brief Bulk OUT endpoint used. */
@@ -86,6 +90,10 @@ typedef struct _GPPortSettingsUSB {
 	 * get larger than _GPPortSettingsSerial. */
 	char port[64];		/**< \brief USB Portname. Specific to lowlevel USB. */
 } GPPortSettingsUSB;
+#ifdef _RESTORE_INTERFACE
+#define interface __STRUCT__
+#undef _RESTORE_INTERFACE
+#endif
 
 /**
  * \brief Port settings for USB mass storage direct IO ports.
